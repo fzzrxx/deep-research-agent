@@ -31,14 +31,11 @@ def agent_node(state: AgentState):
 
 
 
-# copy pasted after this
 
-tool_node = ToolNode(tools)  # handles tool execution automatically
 
-# ---------------------------------------------------
-# 4. ROUTING FUNCTION
-# After the agent node, should we call a tool or stop?
-# ---------------------------------------------------
+tool_node = ToolNode(tools) 
+
+
 def should_use_tool(state: AgentState) -> str:
     last_message = state["messages"][-1]
     if hasattr(last_message, "tool_calls") and last_message.tool_calls:
@@ -62,10 +59,6 @@ def planner_node(state: AgentState) -> dict:
 
 
 
-# ---------------------------------------------------
-# 5. BUILD THE GRAPH
-# Wire nodes together with edges.
-# ---------------------------------------------------
 builder = StateGraph(AgentState)
 
 
@@ -76,18 +69,16 @@ builder.add_node("tools", tool_node)
 builder.set_entry_point("planner")
 
 builder.add_conditional_edges(
-    "agent",                          # from this node...
-    should_use_tool,                  # run this function...
-    {"use_tool": "tools", "end": END} # map its output to a node
+    "agent",                          
+    should_use_tool,                  
+    {"use_tool": "tools", "end": END} 
 )
 
-builder.add_edge("planner", "agent")    # after tools, always go back to agent
+builder.add_edge("planner", "agent")  
 
 graph = builder.compile()
 
-# ---------------------------------------------------
-# 6. RUN IT
-# ---------------------------------------------------
+
 result = graph.invoke({
     "messages": [{"role": "user", "content": "Tell me more about Langchain."}]
 })
